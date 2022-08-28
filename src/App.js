@@ -152,33 +152,39 @@ function App() {
   };
 
   // claimRewards
-  
+  async function getRewards() {
+    const web3 = new Web3(provider);
+    let Contract = CONFIG.CONTRACT_ADDRESS;
+    let contract = new Contract(abi, SMART_CONTRACT);
+    let userRewards = await contract.methods
+      .getReflectionBalances(connectedWallet)
+      .call();
+    console.log("Total Rewards WEI:", userRewards);
+    let etherValue = web3.utils.fromWei(userRewards, "ether");
+    console.log(" Rewards Ether:", etherValue);
+    document.getElementById("displayRewards").innerHTML = etherValue + " $CRO";
+    return etherValue;
+  }
+
   const claimRewards = () => {
     let contract = CONFIG.CONTRACT_ADDRESS;
-    let balance =  getRewards();
-    let tokenBalance = contract.methods.balanceOf(connectedWallet).call();
+    let balance = getRewards();
+    let tokenBalance = contract.methods?.balanceOf(connectedWallet).call();
     if (balance) {
-      let claimTransaction = contract.methods.claimAllRewards().send({
+      let claimTransaction = blockchain.smartContract.methods.claimAllRewards().send({
         from: connectedWallet,
       });
-      if( claimTransaction)
-      {
-         getRewards();
-         getSupply();
-        Swal.fire(
-          'Claimed',
-          'Your $CRO is now in your wallet.?',
-          'success'
-        )
-      }
-      else
-      {
-      Swal.fire('Transaction Failed');
+      if (claimTransaction) {
+        getRewards();
+        getSupply();
+        Swal.fire("Claimed", "Your $CRO is now in your wallet.?", "success");
+      } else {
+        Swal.fire("Transaction Failed");
       }
     } else {
       Swal.fire("You do not have any rewards to claim.");
     }
-  }
+  };
 
   const decrementMintAmount = () => {
     let newMintAmount = mintAmount - 1;
@@ -394,14 +400,8 @@ function App() {
 
                       {/* claimRewards */}
                       <StyledButton
-                        disabled={claimingNft ? 1 : 0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          claimNFTs();
-                          getData();
-                        }}
                       >
-                        {claimingNft ? "CLAIMING" : "CLAIM"}
+                        <a href="https://wildcro-claimpage.vercel.app/" target="_blank">Claim</a>
                       </StyledButton>
                     </s.Container>
                   </>
